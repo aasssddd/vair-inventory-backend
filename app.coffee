@@ -6,7 +6,7 @@ cookieParser = require 'cookie-parser'
 bodyParser = require 'body-parser'
 
 routes = require './routes/index'
-users = require './routes/users'
+inventory = require './routes/inventory'
 
 app = express()
 
@@ -24,7 +24,7 @@ app.use cookieParser()
 app.use express.static path.join __dirname, 'public'
 
 app.use '/', routes
-app.use '/api', users
+app.use '/api/inventory', inventory
 
 # catch 404 and forward to error handler
 app.use (req, res, next) ->

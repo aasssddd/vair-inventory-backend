@@ -9,5 +9,6 @@ module.exports = {
 	db_name: "vair_inventory",
 	user: "inventory",
 	password: "P@ssw0rd",
-	model_path: "./model"
+	model_path: "./model",
+	regenerate_schema: true	
 }

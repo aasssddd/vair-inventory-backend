@@ -1,12 +1,13 @@
+# category.coffee
 module.exports = (sequelize, DataTypes) ->
-  brand = sequelize.define 'brand', {
+  category = sequelize.define 'category', {
     id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    brand_name: {
+    category_name: {
       type: DataTypes.STRING,
       allowNull: true
     },

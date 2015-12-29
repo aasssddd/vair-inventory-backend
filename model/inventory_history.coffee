@@ -12,10 +12,16 @@ module.exports = (sequelize, DataTypes) ->
       type: DataTypes.STRING,
       allowNull: false
     },
-    transfer_date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-      primaryKey: true,
+    reason: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    status_before: {
+      type: DataTypes.ENUM('NEW', 'USE', 'FIX', 'STORE', 'ELIMINATE'),
+      allowNull: false
+    },
+    new_status: {
+      type: DataTypes.ENUM('NEW', 'USE', 'FIX', 'STORE', 'ELIMINATE'),
+      allowNull: false
     }
   }
