@@ -125,7 +125,7 @@ s.put (req, res) ->
 
 		# if change type
 		if type? and inventoryObj.type.type_name != type
-			models.type.findOrCreate { where: {type_name : type}, defaults: {type_name: type, creator: user_name}
+			models.type.findOrCreate { where: {type_name : type}, defaults: {type_name: type, creator: user_name}}
 			.spread (typeObj, isCreatedType) ->
 
 				typeObj.addInventory inventoryObj
@@ -154,7 +154,8 @@ s.put (req, res) ->
 								inventoryObj.category.addBrand brandObj
 
 				else if isCreatedType
-						inventoryObj.brand.addType typeObj
+					inventoryObj.brand.addType typeObj
+
 
 		inventoryObj.save()
 		.then () ->
