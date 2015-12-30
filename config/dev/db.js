@@ -10,5 +10,5 @@ module.exports = {
 	user: "inventory",
 	password: "P@ssw0rd",
 	model_path: "./model",
-	regenerate_schema: true	
+	regenerate_schema: false	
 }

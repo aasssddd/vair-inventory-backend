@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) ->
     },
     status_before: {
       type: DataTypes.ENUM('NEW', 'USE', 'FIX', 'STORE', 'ELIMINATE'),
-      allowNull: false
+      allowNull: true
     },
     new_status: {
       type: DataTypes.ENUM('NEW', 'USE', 'FIX', 'STORE', 'ELIMINATE'),

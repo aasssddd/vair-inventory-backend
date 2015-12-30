@@ -56,6 +56,19 @@ r.post (req, res)->
 					categoryObj.addInventory inventoryObj
 					brandObj.addInventory inventoryObj
 					typeObj.addInventory inventoryObj
+					models.inventory_history.create {
+						transfer_to: user_name,
+						operator: user_name,
+						reason: "New Inventory",
+						new_status: 'NEW'
+					}
+					.then (history) ->
+						beforeOwner = inventoryObj.owner
+						inventoryObj.transfer_from = beforeOwner
+						inventoryObj.owner = user_name
+						inventoryObj.addInventory_history history
+						inventoryObj.save()
+
 					res.json {"state": "OK", "code": 0}
 	.catch (err) ->
 		console.log "Err...#{err}"
@@ -68,6 +81,7 @@ s = router.route '/id/:id'
 update inventory's metadata by id
 ###
 s.put (req, res) ->
+
 	user_name = "William Chen"
 	id = req.params.id
 	aid = req.body.id
@@ -82,7 +96,7 @@ s.put (req, res) ->
 
 	if type? or brand? or category?
 		if not type? and (category? and not brand?)
-			return res.json { "status" : "Error", "code" : 999, "throw" : "cannot change category or brand"}
+			return res.json { "status" : "Error", "code" : 999, "throw" : "cannot change category or brand if not provide type"}
 
 	# find by Id
 	models.inventory.findOne { where : { assetId : id}, include : [models.category, models.brand, models.type]}
@@ -94,30 +108,33 @@ s.put (req, res) ->
 
 		# change aid
 		if aid? and id != aid
-			inventoryObj.aid = aid
+			console.log "aid changed to #{aid}"
+			inventoryObj.assetId = aid
 
 		# change sn
 		if sn? and inventoryObj.sn != sn
+			console.log "sn changed to #{sn}"
 			inventoryObj.sn = sn
 
 		# change status
 		currentStatus = inventoryObj.status
-		if status?
+		if status? and status != currentStatus
+			console.log "status changed to #{status}"
 			inventoryObj.status = status
 
 		# change owner
-		if owner? and inventoryObj.owner != owner
+		if (owner? and inventoryObj.owner != owner) or (status? and status != currentStatus)
+			newOwner = if owner? then owner else inventoryObj.owner
 			models.inventory_history.create {
 				transfer_from: inventoryObj.owner,
-				transfer_to: owner, 
-				operator: user_name, 
+				transfer_to: newOwner,
+				operator: user_name,
 				reason: reason,
 				status_before: currentStatus,
 				new_status: if status? then status else currentStatus
 			}
 			.then (history) ->
 				beforeOwner = inventoryObj.owner
-				console.log "before owner is #{beforeOwner}"
 				inventoryObj.transfer_from = beforeOwner 
 				inventoryObj.owner = owner
 				inventoryObj.addInventory_history history
@@ -125,6 +142,7 @@ s.put (req, res) ->
 
 		# if change type
 		if type? and inventoryObj.type.type_name != type
+			console.log "type changed to #{type}"
 			models.type.findOrCreate { where: {type_name : type}, defaults: {type_name: type, creator: user_name}}
 			.spread (typeObj, isCreatedType) ->
 
@@ -132,6 +150,7 @@ s.put (req, res) ->
 
 				# if change brand
 				if brand? and inventoryObj.brand.brand_name != brand
+					console.log "brand changed to #{brand}"
 					models.brand.findOrCreate { where: {brand_name : brand}, defaults : {brand_name : brand, creator: user_name}}
 					.spread (brandObj, isCreatedBrand) ->
 
@@ -142,6 +161,7 @@ s.put (req, res) ->
 
 						# if change category
 						if category? and inventoryObj.category.category_name != category
+							console.log "category changed to #{category}"
 							models.category.findOrCreate { where : { category_name : category}, defaults : {category_name: category, creator: user_name}}
 							.spread (categoryObj, isCreatedCategory) ->
 
@@ -156,17 +176,11 @@ s.put (req, res) ->
 				else if isCreatedType
 					inventoryObj.brand.addType typeObj
 
-
-		inventoryObj.save()
-		.then () ->
+		# update
+		console.log "update inventory"
+		inventoryObj.save().then () ->
 			res.json {"state": "OK", "code" : 0}
 
-
-###
-delete specified inventory by id
-###
-s.delete (req, res) ->
-	res.json {"state": "delete OK"}
 
 
 t = router.route '/:key/:value'
@@ -175,7 +189,7 @@ show inventory by field name and value
 ###
 t.get (req, res) ->
 	models = sqz.models
-	models.inventory.find { where: {"#{req.params.key}" : req.params.value}, include: [models.category, models.brand, models.type]}
+	models.inventory.findAll { where: {"#{req.params.key}" : req.params.value}, include: [models.category, models.brand, models.type, models.inventory_history]}
 	.then (inventories) ->
 		res.json inventories
 
